@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f7a3a">
+<title>El Económico · Pedidos</title>
+<style>
+  :root{
+    --verde:#1f7a3a; --verde-osc:#155c2b; --verde-suave:#e6f3e9;
+    --fondo:#f6f4ee; --tarjeta:#ffffff; --texto:#1c241e; --gris:#6b756d;
+    --linea:#e4e1d8; --naranja:#f08a24; --wa:#25d366;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fondo);color:var(--texto);padding-bottom:96px}
+  button,input,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+  .ancho{max-width:960px;margin:0 auto;padding:0 16px}
+
+  header{background:linear-gradient(160deg,var(--verde) 0%,var(--verde-osc) 100%);color:#fff;padding:22px 0 54px}
+  .marca{display:flex;align-items:center;gap:12px}
+  .logo{width:52px;height:52px;border-radius:16px;background:#fff;display:grid;place-items:center;font-size:28px;flex:none}
+  h1{font-size:22px;margin:0;letter-spacing:-.3px}
+  .sub{font-size:13px;opacity:.9;margin-top:2px}
+  .datos{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;font-size:12.5px}
+  .dato{background:rgba(255,255,255,.16);padding:6px 10px;border-radius:999px}
+
+  .buscador{margin-top:-28px;position:relative}
+  .buscador input{width:100%;height:56px;border-radius:16px;border:1px solid var(--linea);background:#fff;padding:0 16px 0 46px;font-size:16px;box-shadow:0 6px 18px rgba(20,50,30,.10);outline:none}
+  .buscador input:focus{border-color:var(--verde)}
+  .buscador span{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px}
+
+  .repetir{display:none;width:100%;margin-top:12px;background:var(--verde-suave);border:1px dashed var(--verde);color:var(--verde-osc);border-radius:14px;padding:12px 14px;text-align:left;font-weight:600;font-size:14px}
+
+  .cats{position:sticky;top:0;z-index:5;background:var(--fondo);padding:12px 0 10px}
+  .cats-fila{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+  .cats-fila::-webkit-scrollbar{display:none}
+  .cat{flex:none;border:1px solid var(--linea);background:#fff;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;color:var(--gris)}
+  .cat.activa{background:var(--verde);border-color:var(--verde);color:#fff}
+
+  h2{font-size:16px;margin:14px 0 10px}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  @media(min-width:620px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(min-width:860px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .prod{background:var(--tarjeta);border:1px solid var(--linea);border-radius:18px;padding:12px;display:flex;flex-direction:column;position:relative}
+  .prod.en-carrito{border-color:var(--verde);box-shadow:0 0 0 2px var(--verde-suave)}
+  .foto{height:84px;border-radius:14px;background:var(--verde-suave);display:grid;place-items:center;font-size:46px}
+  .oferta{position:absolute;top:8px;left:8px;background:var(--naranja);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+  .nombre{font-weight:650;font-size:14.5px;margin-top:10px;line-height:1.2;min-height:35px}
+  .precio{font-size:16px;font-weight:750;color:var(--verde-osc);margin-top:2px}
+  .precio small{font-weight:500;color:var(--gris);font-size:12px}
+  .antes{font-size:12px;color:var(--gris);text-decoration:line-through;margin-left:4px;font-weight:500}
+  .accion{margin-top:10px}
+  .agregar{width:100%;height:40px;border-radius:12px;border:0;background:var(--verde);color:#fff;font-weight:700;font-size:14px}
+  .cant{display:flex;align-items:center;justify-content:space-between;height:40px;border-radius:12px;background:var(--verde-suave)}
+  .cant button{width:40px;height:40px;border:0;background:none;font-size:22px;font-weight:700;color:var(--verde-osc)}
+  .cant b{font-size:14px}
+  .vacio{grid-column:1/-1;text-align:center;color:var(--gris);padding:36px 0}
+  .nota{font-size:12px;color:var(--gris);text-align:center;margin:22px 0 0}
+
+  .barra{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--fondo) 70%,transparent);display:none}
+  .barra button{width:100%;max-width:928px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;border-radius:18px;border:0;background:var(--verde-osc);color:#fff;padding:0 18px;font-size:16px;font-weight:700;box-shadow:0 10px 24px rgba(20,60,35,.32)}
+  .barra .n{background:#fff;color:var(--verde-osc);border-radius:999px;min-width:26px;height:26px;display:inline-grid;place-items:center;font-size:13px;margin-right:10px;padding:0 6px}
+
+  .velo{position:fixed;inset:0;background:rgba(15,25,18,.5);z-index:20;display:none;align-items:flex-end;justify-content:center}
+  .velo.abierto{display:flex}
+  .hoja{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));animation:sube .22s ease-out}
+  @keyframes sube{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+  .hoja-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .hoja-top h3{margin:0;font-size:19px}
+  .cerrar{border:0;background:var(--fondo);width:36px;height:36px;border-radius:50%;font-size:18px}
+  .item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--linea)}
+  .item .e{font-size:26px;width:34px;text-align:center}
+  .item .t{flex:1;min-width:0}
+  .item .t b{display:block;font-size:14px}
+  .item .t span{font-size:12.5px;color:var(--gris)}
+  .item .cant{width:112px;flex:none}
+  .item .cant button{width:34px}
+  .item .s{width:74px;text-align:right;font-weight:700;font-size:14px;flex:none}
+  .total{display:flex;justify-content:space-between;font-size:18px;font-weight:800;padding:14px 0 4px}
+  .aviso{font-size:12px;color:var(--gris);margin:0 0 14px}
+  label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
+  .campo{width:100%;border:1px solid var(--linea);border-radius:12px;padding:12px;font-size:16px;outline:none;background:#fff}
+  .campo:focus{border-color:var(--verde)}
+  .op{display:flex;gap:8px}
+  .op button{flex:1;border:1px solid var(--linea);background:#fff;border-radius:12px;padding:11px 6px;font-size:14px;font-weight:600;color:var(--gris)}
+  .op button.activa{border-color:var(--verde);background:var(--verde-suave);color:var(--verde-osc)}
+  .enviar{width:100%;height:56px;border:0;border-radius:16px;background:var(--wa);color:#fff;font-size:16.5px;font-weight:800;margin-top:18px}
+  .vaciar{width:100%;border:0;background:none;color:var(--gris);font-size:13px;padding:12px;text-decoration:underline}
+  .error{color:#b3261e;font-size:13px;margin-top:8px;display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="ancho">
+    <div class="marca">
+      <div class="logo">🥬</div>
+      <div>
+        <h1>El Económico</h1>
+        <div class="sub">Frutas, verduras y mercado · pida desde el celular</div>
+      </div>
+    </div>
+    <div class="datos">
+      <span class="dato">📍 Av. 4 # 33-80, Los Patios</span>
+      <span class="dato">🛵 Domicilio o recoge en el local</span>
+    </div>
+  </div>
+</header>
+
+<main class="ancho">
+  <div class="buscador">
+    <span>🔎</span>
+    <input id="buscar" type="search" placeholder="Buscar: tomate, arroz, huevos…" autocomplete="off">
+  </div>
+  <button class="repetir" id="repetir">🔁 Repetir mi último pedido</button>
+
+  <div class="cats"><div class="cats-fila" id="cats"></div></div>
+  <h2 id="titulo">Todo</h2>
+  <div class="grid" id="grid"></div>
+  <p class="nota">Maqueta de demostración · productos y precios de ejemplo</p>
+</main>
+
+<div class="barra" id="barra">
+  <button id="verPedido"><span><span class="n" id="barraN">0</span>Ver mi pedido</span><span id="barraTotal">$0</span></button>
+</div>
+
+<div class="velo" id="velo">
+  <div class="hoja" role="dialog" aria-label="Mi pedido">
+    <div class="hoja-top"><h3>Mi pedido</h3><button class="cerrar" id="cerrar" aria-label="Cerrar">✕</button></div>
+    <div id="items"></div>
+    <div class="total"><span>Total</span><span id="total">$0</span></div>
+    <p class="aviso">En frutas y verduras el valor final puede variar un poco según el peso real.</p>
+
+    <label for="nombre">¿A nombre de quién?</label>
+    <input class="campo" id="nombre" placeholder="Su nombre" autocomplete="name">
+
+    <label>Entrega</label>
+    <div class="op" id="entrega">
+      <button data-v="Domicilio" class="activa">🛵 Domicilio</button>
+      <button data-v="Recojo en el local">🏪 Recojo en el local</button>
+    </div>
+    <div id="bloqueDir">
+      <label for="dir">Dirección</label>
+      <input class="campo" id="dir" placeholder="Barrio, calle, número, referencia" autocomplete="street-address">
+    </div>
+
+    <label>Pago</label>
+    <div class="op" id="pago">
+      <button data-v="Efectivo" class="activa">💵 Efectivo</button>
+      <button data-v="Transferencia">📲 Transferencia</button>
+    </div>
+
+    <label for="obs">Nota (opcional)</label>
+    <textarea class="campo" id="obs" rows="2" placeholder="Ej.: el aguacate para hoy, los plátanos maduros"></textarea>
+
+    <div class="error" id="error"></div>
+    <button class="enviar" id="enviar">Enviar pedido por WhatsApp</button>
+    <button class="vaciar" id="vaciar">Vaciar pedido</button>
+  </div>
+</div>
+
+<script>
+// ───── Configuración: lo único que se cambia para el local real ─────
+// Número de WhatsApp del local con indicativo, sin + ni espacios (ej. "573001234567").
+// Vacío = WhatsApp deja elegir el contacto (sirve para la demostración).
+const WHATSAPP = "";
+const LOCAL = "El Económico";
+
+// u = unidad de venta · paso = de a cuánto sube la cantidad · antes = precio tachado (oferta)
+const PRODUCTOS = [
+  {id:"tomate",   n:"Tomate chonto",      e:"🍅", c:"Verduras", u:"lb",  paso:.5, p:2000, antes:2500},
+  {id:"cebolla",  n:"Cebolla cabezona",   e:"🧅", c:"Verduras", u:"lb",  paso:.5, p:1800},
+  {id:"papa",     n:"Papa pastusa",       e:"🥔", c:"Verduras", u:"lb",  paso:.5, p:1500},
+  {id:"zanahoria",n:"Zanahoria",          e:"🥕", c:"Verduras", u:"lb",  paso:.5, p:1500},
+  {id:"pimenton", n:"Pimentón",           e:"🫑", c:"Verduras", u:"lb",  paso:.5, p:3000},
+  {id:"yuca",     n:"Yuca",               e:"🍠", c:"Verduras", u:"lb",  paso:.5, p:1500},
+  {id:"lechuga",  n:"Lechuga",            e:"🥬", c:"Verduras", u:"und", paso:1,  p:2500},
+  {id:"cilantro", n:"Cilantro",           e:"🌿", c:"Verduras", u:"atado",paso:1, p:1000},
+  {id:"cebollin", n:"Cebolla larga",      e:"🌱", c:"Verduras", u:"atado",paso:1, p:2000},
+  {id:"ajo",      n:"Ajo",                e:"🧄", c:"Verduras", u:"cabeza",paso:1,p:1000},
+
+  {id:"banano",   n:"Banano",             e:"🍌", c:"Frutas", u:"lb",  paso:.5, p:1500},
+  {id:"platano",  n:"Plátano",            e:"🍌", c:"Frutas", u:"und", paso:1,  p:1200},
+  {id:"aguacate", n:"Aguacate",           e:"🥑", c:"Frutas", u:"und", paso:1,  p:3500, antes:4500},
+  {id:"limon",    n:"Limón",              e:"🍋", c:"Frutas", u:"lb",  paso:.5, p:2500},
+  {id:"naranja",  n:"Naranja",            e:"🍊", c:"Frutas", u:"und", paso:1,  p:600},
+  {id:"mango",    n:"Mango",              e:"🥭", c:"Frutas", u:"und", paso:1,  p:2000},
+  {id:"pina",     n:"Piña",               e:"🍍", c:"Frutas", u:"und", paso:1,  p:5000},
+  {id:"papaya",   n:"Papaya",             e:"🍈", c:"Frutas", u:"lb",  paso:.5, p:1800},
+  {id:"fresa",    n:"Fresa",              e:"🍓", c:"Frutas", u:"lb",  paso:.5, p:5000},
+
+  {id:"arroz",    n:"Arroz 500 g",        e:"🍚", c:"Despensa", u:"und", paso:1, p:2400},
+  {id:"aceite",   n:"Aceite 900 ml",      e:"🌻", c:"Despensa", u:"und", paso:1, p:9500},
+  {id:"azucar",   n:"Azúcar 1 kg",        e:"🥄", c:"Despensa", u:"und", paso:1, p:4800},
+  {id:"panela",   n:"Panela",             e:"🟫", c:"Despensa", u:"und", paso:1, p:3000},
+  {id:"pasta",    n:"Pasta 250 g",        e:"🍝", c:"Despensa", u:"und", paso:1, p:2200},
+  {id:"frijol",   n:"Fríjol",             e:"🫘", c:"Despensa", u:"lb",  paso:.5, p:5500},
+  {id:"lenteja",  n:"Lenteja",            e:"🥣", c:"Despensa", u:"lb",  paso:.5, p:3800},
+  {id:"sal",      n:"Sal 1 kg",           e:"🧂", c:"Despensa", u:"und", paso:1, p:1800},
+  {id:"cafe",     n:"Café 250 g",         e:"☕", c:"Despensa", u:"und", paso:1, p:9000},
+  {id:"atun",     n:"Atún en lata",       e:"🐟", c:"Despensa", u:"und", paso:1, p:6500},
+
+  {id:"huevos",   n:"Huevos cubeta x30",  e:"🥚", c:"Lácteos y huevos", u:"und", paso:1, p:16000, antes:17500},
+  {id:"leche",    n:"Leche 1 L",          e:"🥛", c:"Lácteos y huevos", u:"und", paso:1, p:4500},
+  {id:"queso",    n:"Queso campesino",    e:"🧀", c:"Lácteos y huevos", u:"lb",  paso:.5, p:9000},
+  {id:"mantequilla",n:"Mantequilla 250 g",e:"🧈", c:"Lácteos y huevos", u:"und", paso:1, p:6000},
+
+  {id:"jabon",    n:"Jabón de loza",      e:"🧼", c:"Aseo", u:"und", paso:1, p:4000},
+  {id:"papel",    n:"Papel higiénico x4", e:"🧻", c:"Aseo", u:"und", paso:1, p:7000},
+  {id:"detergente",n:"Detergente 500 g",  e:"🧺", c:"Aseo", u:"und", paso:1, p:5500},
+  {id:"limpido",  n:"Límpido 1 L",        e:"🧴", c:"Aseo", u:"und", paso:1, p:3500},
+];
+// ────────────────────────────────────────────────────────────────────
+
+const $ = id => document.getElementById(id);
+const porId = Object.fromEntries(PRODUCTOS.map(p => [p.id, p]));
+const CATS = ["Todo", "Ofertas", ...new Set(PRODUCTOS.map(p => p.c))];
+const pesos = v => "$" + Math.round(v).toLocaleString("es-CO");
+const cantTxt = q => String(q).replace(".", ",");
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const leer = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+
+let carrito = limpiar(leer("le_carrito"));
+let cat = "Todo", texto = "";
+let entrega = "Domicilio", pago = "Efectivo";
+
+function limpiar(c) {
+  const ok = {};
+  for (const [id, q] of Object.entries(c || {})) if (porId[id] && q > 0) ok[id] = q;
+  return ok;
+}
+const sinTildes = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+function cambiar(id, signo) {
+  const p = porId[id];
+  const q = Math.max(0, (carrito[id] || 0) + signo * p.paso);
+  if (q) carrito[id] = q; else delete carrito[id];
+  guardar("le_carrito", carrito);
+  pintar();
+}
+
+function control(p) {
+  const q = carrito[p.id];
+  if (!q) return `<button class="agregar" data-id="${p.id}" data-s="1">Agregar</button>`;
+  return `<div class="cant"><button data-id="${p.id}" data-s="-1" aria-label="Quitar">−</button><b>${cantTxt(q)} ${p.u}</b><button data-id="${p.id}" data-s="1" aria-label="Sumar">+</button></div>`;
+}
+
+function pintarCats() {
+  $("cats").innerHTML = CATS.map(c => `<button class="cat${c === cat ? " activa" : ""}" data-c="${c}">${c === "Ofertas" ? "🔥 " : ""}${c}</button>`).join("");
+}
+
+function pintarGrid() {
+  const t = sinTildes(texto.trim());
+  const lista = PRODUCTOS.filter(p =>
+    t ? sinTildes(p.n).includes(t) : cat === "Todo" || (cat === "Ofertas" ? p.antes : p.c === cat));
+  $("titulo").textContent = t ? `Resultados para "${texto.trim()}"` : cat;
+  $("grid").innerHTML = lista.length ? lista.map(p => `
+    <div class="prod${carrito[p.id] ? " en-carrito" : ""}">
+      ${p.antes ? '<span class="oferta">Oferta</span>' : ""}
+      <div class="foto">${p.e}</div>
+      <div class="nombre">${p.n}</div>
+      <div class="precio">${pesos(p.p)} <small>/ ${p.u}</small>${p.antes ? `<span class="antes">${pesos(p.antes)}</span>` : ""}</div>
+      <div class="accion">${control(p)}</div>
+    </div>`).join("") : '<div class="vacio">No encontramos ese producto. Escríbalo en la nota del pedido y se lo confirmamos.</div>';
+}
+
+function totales() {
+  let total = 0, n = 0;
+  for (const [id, q] of Object.entries(carrito)) { total += q * porId[id].p; n++; }
+  return { total, n };
+}
+
+function pintarPedido() {
+  const { total, n } = totales();
+  $("barra").style.display = n ? "block" : "none";
+  $("barraN").textContent = n;
+  $("barraTotal").textContent = pesos(total);
+  $("total").textContent = pesos(total);
+  $("items").innerHTML = Object.entries(carrito).map(([id, q]) => {
+    const p = porId[id];
+    return `<div class="item"><div class="e">${p.e}</div>
+      <div class="t"><b>${p.n}</b><span>${pesos(p.p)} / ${p.u}</span></div>
+      ${control(p)}<div class="s">${pesos(q * p.p)}</div></div>`;
+  }).join("");
+  if (!n) $("velo").classList.remove("abierto");
+  $("repetir").style.display = !n && leer("le_ultimo") ? "block" : "none";
+}
+
+function pintar() { pintarGrid(); pintarPedido(); }
+
+function mensaje() {
+  const { total } = totales();
+  const lineas = Object.entries(carrito).map(([id, q]) => {
+    const p = porId[id];
+    return `• ${cantTxt(q)} ${p.u} · ${p.n} — ${pesos(q * p.p)}`;
+  });
+  const m = [`🛒 *Pedido para ${LOCAL}*`, "", ...lineas, "", `*Total aprox.: ${pesos(total)}*`, "",
+    `👤 ${$("nombre").value.trim()}`,
+    entrega === "Domicilio" ? `🛵 Domicilio: ${$("dir").value.trim()}` : "🏪 Recojo en el local",
+    `💵 Pago: ${pago}`];
+  const obs = $("obs").value.trim();
+  if (obs) m.push(`📝 ${obs}`);
+  return m.join("\n");
+}
+
+function opciones(idCaja, alElegir) {
+  $(idCaja).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    [...$(idCaja).children].forEach(x => x.classList.toggle("activa", x === b));
+    alElegir(b.dataset.v);
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-id]");
+  if (b) cambiar(b.dataset.id, Number(b.dataset.s));
+});
+$("cats").addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b) return;
+  cat = b.dataset.c; texto = ""; $("buscar").value = "";
+  pintarCats(); pintarGrid();
+});
+$("buscar").addEventListener("input", e => { texto = e.target.value; pintarGrid(); });
+$("verPedido").addEventListener("click", () => $("velo").classList.add("abierto"));
+$("cerrar").addEventListener("click", () => $("velo").classList.remove("abierto"));
+$("velo").addEventListener("click", e => { if (e.target === $("velo")) $("velo").classList.remove("abierto"); });
+opciones("entrega", v => { entrega = v; $("bloqueDir").style.display = v === "Domicilio" ? "block" : "none"; });
+opciones("pago", v => { pago = v; });
+$("vaciar").addEventListener("click", () => { carrito = {}; guardar("le_carrito", carrito); pintar(); });
+$("repetir").addEventListener("click", () => { carrito = limpiar(leer("le_ultimo")); guardar("le_carrito", carrito); pintar(); $("velo").classList.add("abierto"); });
+
+$("enviar").addEventListener("click", () => {
+  const err = $("error");
+  const falta = !$("nombre").value.trim() ? "Escriba su nombre para saber a quién va el pedido."
+    : entrega === "Domicilio" && !$("dir").value.trim() ? "Escriba la dirección para el domicilio." : "";
+  err.textContent = falta; err.style.display = falta ? "block" : "none";
+  if (falta) return;
+  guardar("le_ultimo", carrito);
+  guardar("le_cliente", { nombre: $("nombre").value.trim(), dir: $("dir").value.trim() });
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje())}`, "_blank");
+});
+
+const cliente = leer("le_cliente");
+if (cliente) { $("nombre").value = cliente.nombre || ""; $("dir").value = cliente.dir || ""; }
+pintarCats(); pintar();
+</script>
+</body>
+</html>
