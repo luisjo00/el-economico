@@ -40,15 +40,20 @@
   .cat.activa{background:var(--verde);border-color:var(--verde);color:#fff}
 
   h2{font-size:16px;margin:14px 0 10px}
+  .sec{grid-column:1/-1;font-size:15px;font-weight:750;margin:10px 0 0;color:var(--verde-osc)}
+  .sec small{font-weight:500;color:var(--gris);font-size:12px}
   .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   @media(min-width:620px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
   @media(min-width:860px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
   .prod{background:var(--tarjeta);border:1px solid var(--linea);border-radius:18px;padding:12px;display:flex;flex-direction:column;position:relative}
   .prod.en-carrito{border-color:var(--verde);box-shadow:0 0 0 2px var(--verde-suave)}
-  .foto{height:84px;border-radius:14px;background:var(--verde-suave);display:grid;place-items:center;font-size:46px}
+  .foto{height:64px;border-radius:14px;background:var(--verde-suave);display:grid;place-items:center;font-size:36px}
   .oferta{position:absolute;top:8px;left:8px;background:var(--naranja);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
   .nombre{font-weight:650;font-size:14.5px;margin-top:10px;line-height:1.2;min-height:35px}
   .precio{font-size:16px;font-weight:750;color:var(--verde-osc);margin-top:2px}
+  .precio.pc{font-size:12px;font-weight:500;color:var(--gris)}
+  .marca-p{font-weight:500;color:var(--gris);font-size:12.5px;display:block}
+  .duda{position:absolute;top:8px;right:8px;background:#fff3d6;color:#8a5a00;font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:999px}
   .precio small{font-weight:500;color:var(--gris);font-size:12px}
   .antes{font-size:12px;color:var(--gris);text-decoration:line-through;margin-left:4px;font-weight:500}
   .accion{margin-top:10px}
@@ -84,6 +89,7 @@
   .campo{width:100%;border:1px solid var(--linea);border-radius:12px;padding:12px;font-size:16px;outline:none;background:#fff}
   .campo:focus{border-color:var(--verde)}
   .op{display:flex;gap:8px}
+  .pista{font-size:12.5px;color:var(--gris);margin:8px 0 0}
   .op button{flex:1;border:1px solid var(--linea);background:#fff;border-radius:12px;padding:11px 6px;font-size:14px;font-weight:600;color:var(--gris)}
   .op button.activa{border-color:var(--verde);background:var(--verde-suave);color:var(--verde-osc)}
   .enviar{width:100%;height:56px;border:0;border-radius:16px;background:var(--wa);color:#fff;font-size:16.5px;font-weight:800;margin-top:18px}
@@ -98,13 +104,14 @@
     <div class="marca">
       <div class="logo">🥬</div>
       <div>
-        <h1>El Económico</h1>
+        <h1 id="nombreLocal"></h1>
         <div class="sub">Frutas, verduras y mercado · pida desde el celular</div>
       </div>
     </div>
     <div class="datos">
-      <span class="dato">📍 Av. 4 # 33-80, Los Patios</span>
+      <span class="dato" id="datoDir"></span>
       <span class="dato">🛵 Domicilio o recoge en el local</span>
+      <span class="dato">📲 Pago por Nequi o llave</span>
     </div>
   </div>
 </header>
@@ -112,14 +119,14 @@
 <main class="ancho">
   <div class="buscador">
     <span>🔎</span>
-    <input id="buscar" type="search" placeholder="Buscar: tomate, arroz, huevos…" autocomplete="off">
+    <input id="buscar" type="search" placeholder="Buscar: tomate, atún, jabón…" autocomplete="off">
   </div>
   <button class="repetir" id="repetir">🔁 Repetir mi último pedido</button>
 
   <div class="cats"><div class="cats-fila" id="cats"></div></div>
   <h2 id="titulo">Todo</h2>
   <div class="grid" id="grid"></div>
-  <p class="nota">Maqueta de demostración · productos y precios de ejemplo</p>
+  <p class="nota">Maqueta de demostración · surtido real del local · precios y unidades de venta por confirmar</p>
 </main>
 
 <div class="barra" id="barra">
@@ -131,7 +138,7 @@
     <div class="hoja-top"><h3>Mi pedido</h3><button class="cerrar" id="cerrar" aria-label="Cerrar">✕</button></div>
     <div id="items"></div>
     <div class="total"><span>Total</span><span id="total">$0</span></div>
-    <p class="aviso">En frutas y verduras el valor final puede variar un poco según el peso real.</p>
+    <p class="aviso" id="aviso"></p>
 
     <label for="nombre">¿A nombre de quién?</label>
     <input class="campo" id="nombre" placeholder="Su nombre" autocomplete="name">
@@ -148,9 +155,10 @@
 
     <label>Pago</label>
     <div class="op" id="pago">
-      <button data-v="Efectivo" class="activa">💵 Efectivo</button>
-      <button data-v="Transferencia">📲 Transferencia</button>
+      <button data-v="Nequi" class="activa">📲 Nequi</button>
+      <button data-v="Llave">🔑 Llave</button>
     </div>
+    <p class="pista" id="pistaPago"></p>
 
     <label for="obs">Nota (opcional)</label>
     <textarea class="campo" id="obs" rows="2" placeholder="Ej.: el aguacate para hoy, los plátanos maduros"></textarea>
@@ -161,62 +169,31 @@
   </div>
 </div>
 
+<script src="surtido.js"></script>
 <script>
 // ───── Configuración: lo único que se cambia para el local real ─────
 // Número de WhatsApp del local con indicativo, sin + ni espacios (ej. "573001234567").
 // Vacío = WhatsApp deja elegir el contacto (sirve para la demostración).
-const WHATSAPP = "";
-const LOCAL = "El Económico";
+const WHATSAPP = "";        // POR PEDIR al dueño. El pedido le llega SOLO a él, a este WhatsApp.
+const LOCAL = "El Económico"; // POR CONFIRMAR: nombre exacto del negocio.
+const DIRECCION = "";       // POR CONFIRMAR: dirección exacta. Vacío = solo "Los Patios".
+// Número al que el cliente paga por Nequi o por llave (el dueño dijo que es el mismo número). POR PEDIR.
+const PAGO_NUMERO = "";
 
-// u = unidad de venta · paso = de a cuánto sube la cantidad · antes = precio tachado (oferta)
-const PRODUCTOS = [
-  {id:"tomate",   n:"Tomate chonto",      e:"🍅", c:"Verduras", u:"lb",  paso:.5, p:2000, antes:2500},
-  {id:"cebolla",  n:"Cebolla cabezona",   e:"🧅", c:"Verduras", u:"lb",  paso:.5, p:1800},
-  {id:"papa",     n:"Papa pastusa",       e:"🥔", c:"Verduras", u:"lb",  paso:.5, p:1500},
-  {id:"zanahoria",n:"Zanahoria",          e:"🥕", c:"Verduras", u:"lb",  paso:.5, p:1500},
-  {id:"pimenton", n:"Pimentón",           e:"🫑", c:"Verduras", u:"lb",  paso:.5, p:3000},
-  {id:"yuca",     n:"Yuca",               e:"🍠", c:"Verduras", u:"lb",  paso:.5, p:1500},
-  {id:"lechuga",  n:"Lechuga",            e:"🥬", c:"Verduras", u:"und", paso:1,  p:2500},
-  {id:"cilantro", n:"Cilantro",           e:"🌿", c:"Verduras", u:"atado",paso:1, p:1000},
-  {id:"cebollin", n:"Cebolla larga",      e:"🌱", c:"Verduras", u:"atado",paso:1, p:2000},
-  {id:"ajo",      n:"Ajo",                e:"🧄", c:"Verduras", u:"cabeza",paso:1,p:1000},
-
-  {id:"banano",   n:"Banano",             e:"🍌", c:"Frutas", u:"lb",  paso:.5, p:1500},
-  {id:"platano",  n:"Plátano",            e:"🍌", c:"Frutas", u:"und", paso:1,  p:1200},
-  {id:"aguacate", n:"Aguacate",           e:"🥑", c:"Frutas", u:"und", paso:1,  p:3500, antes:4500},
-  {id:"limon",    n:"Limón",              e:"🍋", c:"Frutas", u:"lb",  paso:.5, p:2500},
-  {id:"naranja",  n:"Naranja",            e:"🍊", c:"Frutas", u:"und", paso:1,  p:600},
-  {id:"mango",    n:"Mango",              e:"🥭", c:"Frutas", u:"und", paso:1,  p:2000},
-  {id:"pina",     n:"Piña",               e:"🍍", c:"Frutas", u:"und", paso:1,  p:5000},
-  {id:"papaya",   n:"Papaya",             e:"🍈", c:"Frutas", u:"lb",  paso:.5, p:1800},
-  {id:"fresa",    n:"Fresa",              e:"🍓", c:"Frutas", u:"lb",  paso:.5, p:5000},
-
-  {id:"arroz",    n:"Arroz 500 g",        e:"🍚", c:"Despensa", u:"und", paso:1, p:2400},
-  {id:"aceite",   n:"Aceite 900 ml",      e:"🌻", c:"Despensa", u:"und", paso:1, p:9500},
-  {id:"azucar",   n:"Azúcar 1 kg",        e:"🥄", c:"Despensa", u:"und", paso:1, p:4800},
-  {id:"panela",   n:"Panela",             e:"🟫", c:"Despensa", u:"und", paso:1, p:3000},
-  {id:"pasta",    n:"Pasta 250 g",        e:"🍝", c:"Despensa", u:"und", paso:1, p:2200},
-  {id:"frijol",   n:"Fríjol",             e:"🫘", c:"Despensa", u:"lb",  paso:.5, p:5500},
-  {id:"lenteja",  n:"Lenteja",            e:"🥣", c:"Despensa", u:"lb",  paso:.5, p:3800},
-  {id:"sal",      n:"Sal 1 kg",           e:"🧂", c:"Despensa", u:"und", paso:1, p:1800},
-  {id:"cafe",     n:"Café 250 g",         e:"☕", c:"Despensa", u:"und", paso:1, p:9000},
-  {id:"atun",     n:"Atún en lata",       e:"🐟", c:"Despensa", u:"und", paso:1, p:6500},
-
-  {id:"huevos",   n:"Huevos cubeta x30",  e:"🥚", c:"Lácteos y huevos", u:"und", paso:1, p:16000, antes:17500},
-  {id:"leche",    n:"Leche 1 L",          e:"🥛", c:"Lácteos y huevos", u:"und", paso:1, p:4500},
-  {id:"queso",    n:"Queso campesino",    e:"🧀", c:"Lácteos y huevos", u:"lb",  paso:.5, p:9000},
-  {id:"mantequilla",n:"Mantequilla 250 g",e:"🧈", c:"Lácteos y huevos", u:"und", paso:1, p:6000},
-
-  {id:"jabon",    n:"Jabón de loza",      e:"🧼", c:"Aseo", u:"und", paso:1, p:4000},
-  {id:"papel",    n:"Papel higiénico x4", e:"🧻", c:"Aseo", u:"und", paso:1, p:7000},
-  {id:"detergente",n:"Detergente 500 g",  e:"🧺", c:"Aseo", u:"und", paso:1, p:5500},
-  {id:"limpido",  n:"Límpido 1 L",        e:"🧴", c:"Aseo", u:"und", paso:1, p:3500},
-];
+// El surtido vive en surtido.js (SURTIDO). Aquí solo se aplana y se le pone id a cada producto.
+const sinTildes = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const slug = s => sinTildes(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const PRODUCTOS = SURTIDO.flatMap(g => g.items.map(p => ({
+  ...p, c: g.c, e: p.e || g.e,
+  id: slug(g.c + " " + p.n + " " + (p.m || "")),
+  nc: p.m ? p.n + " " + p.m : p.n,                       // nombre completo, para el mensaje y la búsqueda
+  paso: p.paso || (["lb", "kg"].includes(p.u) ? .5 : 1), // de a cuánto sube la cantidad
+})));
 // ────────────────────────────────────────────────────────────────────
 
 const $ = id => document.getElementById(id);
 const porId = Object.fromEntries(PRODUCTOS.map(p => [p.id, p]));
-const CATS = ["Todo", "Ofertas", ...new Set(PRODUCTOS.map(p => p.c))];
+const CATS = ["Todo", ...(PRODUCTOS.some(p => p.antes) ? ["Ofertas"] : []), ...SURTIDO.map(g => g.c)];
 const pesos = v => "$" + Math.round(v).toLocaleString("es-CO");
 const cantTxt = q => String(q).replace(".", ",");
 const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
@@ -224,14 +201,13 @@ const leer = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { 
 
 let carrito = limpiar(leer("le_carrito"));
 let cat = "Todo", texto = "";
-let entrega = "Domicilio", pago = "Efectivo";
+let entrega = "Domicilio", pago = "Nequi";
 
 function limpiar(c) {
   const ok = {};
   for (const [id, q] of Object.entries(c || {})) if (porId[id] && q > 0) ok[id] = q;
   return ok;
 }
-const sinTildes = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function cambiar(id, signo) {
   const p = porId[id];
@@ -244,45 +220,63 @@ function cambiar(id, signo) {
 function control(p) {
   const q = carrito[p.id];
   if (!q) return `<button class="agregar" data-id="${p.id}" data-s="1">Agregar</button>`;
-  return `<div class="cant"><button data-id="${p.id}" data-s="-1" aria-label="Quitar">−</button><b>${cantTxt(q)} ${p.u}</b><button data-id="${p.id}" data-s="1" aria-label="Sumar">+</button></div>`;
+  return `<div class="cant"><button data-id="${p.id}" data-s="-1" aria-label="Quitar">−</button><b>${cantTxt(q)}${p.u ? " " + p.u : ""}</b><button data-id="${p.id}" data-s="1" aria-label="Sumar">+</button></div>`;
 }
 
 function pintarCats() {
   $("cats").innerHTML = CATS.map(c => `<button class="cat${c === cat ? " activa" : ""}" data-c="${c}">${c === "Ofertas" ? "🔥 " : ""}${c}</button>`).join("");
 }
 
+const precioTxt = p => p.p
+  ? `<div class="precio">${pesos(p.p)}${p.u ? ` <small>/ ${p.u}</small>` : ""}${p.antes ? `<span class="antes">${pesos(p.antes)}</span>` : ""}</div>`
+  : `<div class="precio pc">Precio por confirmar</div>`;
+
+const tarjeta = p => `
+    <div class="prod${carrito[p.id] ? " en-carrito" : ""}">
+      ${p.antes ? '<span class="oferta">Oferta</span>' : ""}
+      ${p.duda ? `<span class="duda" title="${p.duda}">nombre por confirmar</span>` : ""}
+      <div class="foto">${p.e}</div>
+      <div class="nombre">${p.n}${p.m ? `<span class="marca-p">${p.m}</span>` : ""}</div>
+      ${precioTxt(p)}
+      <div class="accion">${control(p)}</div>
+    </div>`;
+
 function pintarGrid() {
   const t = sinTildes(texto.trim());
   const lista = PRODUCTOS.filter(p =>
-    t ? sinTildes(p.n).includes(t) : cat === "Todo" || (cat === "Ofertas" ? p.antes : p.c === cat));
-  $("titulo").textContent = t ? `Resultados para "${texto.trim()}"` : cat;
-  $("grid").innerHTML = lista.length ? lista.map(p => `
-    <div class="prod${carrito[p.id] ? " en-carrito" : ""}">
-      ${p.antes ? '<span class="oferta">Oferta</span>' : ""}
-      <div class="foto">${p.e}</div>
-      <div class="nombre">${p.n}</div>
-      <div class="precio">${pesos(p.p)} <small>/ ${p.u}</small>${p.antes ? `<span class="antes">${pesos(p.antes)}</span>` : ""}</div>
-      <div class="accion">${control(p)}</div>
-    </div>`).join("") : '<div class="vacio">No encontramos ese producto. Escríbalo en la nota del pedido y se lo confirmamos.</div>';
+    t ? sinTildes(p.nc + " " + p.c).includes(t) : cat === "Todo" || (cat === "Ofertas" ? p.antes : p.c === cat));
+  $("titulo").textContent = t ? `Resultados para "${texto.trim()}"` : cat === "Todo" ? `Todo el surtido · ${PRODUCTOS.length} productos` : cat;
+  let html;
+  if (!lista.length) html = '<div class="vacio">No encontramos ese producto. Escríbalo en la nota del pedido y se lo confirmamos.</div>';
+  else if (!t && cat === "Todo") html = SURTIDO.map(g => {
+    const de = lista.filter(p => p.c === g.c);
+    return `<div class="sec">${g.e} ${g.c} <small>· ${de.length}</small></div>` + de.map(tarjeta).join("");
+  }).join("");
+  else html = lista.map(tarjeta).join("");
+  $("grid").innerHTML = html;
 }
 
 function totales() {
-  let total = 0, n = 0;
-  for (const [id, q] of Object.entries(carrito)) { total += q * porId[id].p; n++; }
-  return { total, n };
+  let total = 0, n = 0, sinPrecio = 0;
+  for (const [id, q] of Object.entries(carrito)) { total += q * (porId[id].p || 0); n++; if (!porId[id].p) sinPrecio++; }
+  return { total, n, sinPrecio };
 }
 
 function pintarPedido() {
-  const { total, n } = totales();
+  const { total, n, sinPrecio } = totales();
+  const totalTxt = sinPrecio ? "Por confirmar" : pesos(total);
   $("barra").style.display = n ? "block" : "none";
   $("barraN").textContent = n;
-  $("barraTotal").textContent = pesos(total);
-  $("total").textContent = pesos(total);
+  $("barraTotal").textContent = sinPrecio ? "" : totalTxt;
+  $("total").textContent = totalTxt;
+  $("aviso").textContent = sinPrecio
+    ? "El local le confirma el valor y la unidad (libra, kilo, unidad) de cada producto al recibir el pedido."
+    : "En frutas y verduras el valor final puede variar un poco según el peso real.";
   $("items").innerHTML = Object.entries(carrito).map(([id, q]) => {
     const p = porId[id];
     return `<div class="item"><div class="e">${p.e}</div>
-      <div class="t"><b>${p.n}</b><span>${pesos(p.p)} / ${p.u}</span></div>
-      ${control(p)}<div class="s">${pesos(q * p.p)}</div></div>`;
+      <div class="t"><b>${p.nc}</b><span>${p.p ? pesos(p.p) + (p.u ? " / " + p.u : "") : "Precio por confirmar"}</span></div>
+      ${control(p)}<div class="s">${p.p ? pesos(q * p.p) : "—"}</div></div>`;
   }).join("");
   if (!n) $("velo").classList.remove("abierto");
   $("repetir").style.display = !n && leer("le_ultimo") ? "block" : "none";
@@ -291,15 +285,16 @@ function pintarPedido() {
 function pintar() { pintarGrid(); pintarPedido(); }
 
 function mensaje() {
-  const { total } = totales();
+  const { total, sinPrecio } = totales();
   const lineas = Object.entries(carrito).map(([id, q]) => {
     const p = porId[id];
-    return `• ${cantTxt(q)} ${p.u} · ${p.n} — ${pesos(q * p.p)}`;
+    return `• ${cantTxt(q)}${p.u ? " " + p.u + " ·" : " ×"} ${p.nc}${p.p ? " — " + pesos(q * p.p) : ""}`;
   });
-  const m = [`🛒 *Pedido para ${LOCAL}*`, "", ...lineas, "", `*Total aprox.: ${pesos(total)}*`, "",
+  const m = [`🛒 *Pedido para ${LOCAL}*`, "", ...lineas, "",
+    sinPrecio ? "*Total: por confirmar*" : `*Total aprox.: ${pesos(total)}*`, "",
     `👤 ${$("nombre").value.trim()}`,
     entrega === "Domicilio" ? `🛵 Domicilio: ${$("dir").value.trim()}` : "🏪 Recojo en el local",
-    `💵 Pago: ${pago}`];
+    `📲 Pago: ${pago}`];
   const obs = $("obs").value.trim();
   if (obs) m.push(`📝 ${obs}`);
   return m.join("\n");
@@ -327,7 +322,7 @@ $("verPedido").addEventListener("click", () => $("velo").classList.add("abierto"
 $("cerrar").addEventListener("click", () => $("velo").classList.remove("abierto"));
 $("velo").addEventListener("click", e => { if (e.target === $("velo")) $("velo").classList.remove("abierto"); });
 opciones("entrega", v => { entrega = v; $("bloqueDir").style.display = v === "Domicilio" ? "block" : "none"; });
-opciones("pago", v => { pago = v; });
+opciones("pago", v => { pago = v; pintarPago(); });
 $("vaciar").addEventListener("click", () => { carrito = {}; guardar("le_carrito", carrito); pintar(); });
 $("repetir").addEventListener("click", () => { carrito = limpiar(leer("le_ultimo")); guardar("le_carrito", carrito); pintar(); $("velo").classList.add("abierto"); });
 
@@ -341,6 +336,15 @@ $("enviar").addEventListener("click", () => {
   guardar("le_cliente", { nombre: $("nombre").value.trim(), dir: $("dir").value.trim() });
   window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje())}`, "_blank");
 });
+
+function pintarPago() {
+  $("pistaPago").textContent = PAGO_NUMERO
+    ? `Pague por ${pago} al ${PAGO_NUMERO} y envíe el comprobante por WhatsApp.`
+    : `Pago por ${pago}: el local le confirma el número al recibir el pedido.`;
+}
+$("nombreLocal").textContent = LOCAL;
+$("datoDir").textContent = "📍 " + (DIRECCION ? DIRECCION + ", Los Patios" : "Los Patios");
+pintarPago();
 
 const cliente = leer("le_cliente");
 if (cliente) { $("nombre").value = cliente.nombre || ""; $("dir").value = cliente.dir || ""; }
