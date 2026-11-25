@@ -7,12 +7,15 @@
 //   p    precio en pesos por esa unidad                        null = sin precio
 //
 // Decisión del dueño (24/11/2026): el catálogo va SIN precios y SIN unidades de venta. Por eso u y p van vacíos.
+// Pedido del dueño (25/11/2026): frutas y verduras se piden por PESO (100 g, 200 g, 300 g, media libra, 1 libra,
+// 1 kilo, 2 kilos…). Las categorías con  peso: true  usan esa lista (PESOS, en index.html); el resto va por unidades.
+// Un producto suelto puede llevar  peso: true  o  peso: false  para salirse de lo que diga su categoría.
 // Si algún día los quiere, basta llenarlos: la maqueta muestra sola el precio y el total.
 // Nombres confirmados por el dueño tal como los escribió: Yotas, Chocheco, Mata burro, Raíces chinas, Agras,
 // Esponja Brikla frágil, Lefragance. Corregidos por él: Vanish en polvo, Maíz amarillo, Deterk.
 // Pendiente: Maíz pira venía en una segunda lista «La Huerta»; falta saber si es otra presentación u otra marca.
 const SURTIDO = [
-  { c: "Verduras", e: "🥬", items: [
+  { c: "Verduras", e: "🥬", peso: true, items: [
     {n:"Cebolla cabezona", e:"🧅", u:"", p:null},
     {n:"Cebolla roja", e:"🧅", u:"", p:null},
     {n:"Cebolla junca", e:"🌱", u:"", p:null},
@@ -53,7 +56,7 @@ const SURTIDO = [
     {n:"Yotas", u:"", p:null},
     {n:"Raíces chinas", u:"", p:null},
   ]},
-  { c: "Frutas", e:"🍎", items: [
+  { c: "Frutas", e:"🍎", peso: true, items: [
     {n:"Banano", e:"🍌", u:"", p:null},
     {n:"Piña", e:"🍍", u:"", p:null},
     {n:"Coco", e:"🥥", u:"", p:null},
@@ -98,7 +101,7 @@ const SURTIDO = [
     {n:"Chocheco", u:"", p:null},
     {n:"Agras", u:"", p:null},
   ]},
-  { c: "Papas, yuca y plátanos", e:"🥔", items: [
+  { c: "Papas, yuca y plátanos", e:"🥔", peso: true, items: [
     {n:"Papa criolla", u:"", p:null},
     {n:"Papa única", u:"", p:null},
     {n:"Papa pastusa", u:"", p:null},

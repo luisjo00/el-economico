@@ -61,6 +61,7 @@
   .cant{display:flex;align-items:center;justify-content:space-between;height:40px;border-radius:12px;background:var(--verde-suave)}
   .cant button{width:40px;height:40px;border:0;background:none;font-size:22px;font-weight:700;color:var(--verde-osc)}
   .cant b{font-size:14px}
+  .cant select{flex:1;min-width:0;height:40px;border:0;background:none;font-weight:700;font-size:14px;color:var(--texto);text-align:center;text-align-last:center;outline:none}
   .vacio{grid-column:1/-1;text-align:center;color:var(--gris);padding:36px 0}
   .nota{font-size:12px;color:var(--gris);text-align:center;margin:22px 0 0}
 
@@ -180,11 +181,15 @@ const DIRECCION = "";       // Se omite por ahora (decisión de Luis, 24/11). Va
 // Número al que el cliente paga por Nequi o por llave: el mismo del WhatsApp, según el dueño.
 const PAGO_NUMERO = "311 728 4765";
 
+// Frutas y verduras se piden por peso: estas son las opciones, de menor a mayor. Se pueden agregar o quitar.
+const PESOS = ["100 g", "200 g", "300 g", "Media libra", "1 libra", "1 libra y media", "1 kilo", "2 kilos", "3 kilos", "4 kilos", "5 kilos"];
+const PESO_INICIAL = "1 libra"; // lo que queda puesto al tocar «Agregar»
+
 // El surtido vive en surtido.js (SURTIDO). Aquí solo se aplana y se le pone id a cada producto.
 const sinTildes = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const slug = s => sinTildes(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const PRODUCTOS = SURTIDO.flatMap(g => g.items.map(p => ({
-  ...p, c: g.c, e: p.e || g.e,
+  ...p, c: g.c, e: p.e || g.e, peso: p.peso ?? !!g.peso,
   id: slug(g.c + " " + p.n + " " + (p.m || "")),
   nc: p.m ? p.n + " " + p.m : p.n,                       // nombre completo, para el mensaje y la búsqueda
   paso: p.paso || (["lb", "kg"].includes(p.u) ? .5 : 1), // de a cuánto sube la cantidad
@@ -207,13 +212,22 @@ let entrega = "Domicilio", pago = "Nequi";
 
 function limpiar(c) {
   const ok = {};
-  for (const [id, q] of Object.entries(c || {})) if (porId[id] && q > 0) ok[id] = q;
+  for (const [id, q] of Object.entries(c || {})) {
+    const p = porId[id];
+    if (p && q > 0 && (!p.peso || (Number.isInteger(q) && q <= PESOS.length))) ok[id] = q;
+  }
   return ok;
 }
 
 function cambiar(id, signo) {
   const p = porId[id];
-  const q = Math.max(0, (carrito[id] || 0) + signo * p.paso);
+  // En productos por peso el carrito guarda la posición en PESOS (1 = la primera opción).
+  const q = p.peso
+    ? (carrito[id] ? Math.min(PESOS.length, carrito[id] + signo) : signo > 0 ? PESOS.indexOf(PESO_INICIAL) + 1 : 0)
+    : Math.max(0, (carrito[id] || 0) + signo * p.paso);
+  poner(id, q);
+}
+function poner(id, q) {
   if (q) carrito[id] = q; else delete carrito[id];
   guardar("le_carrito", carrito);
   pintar();
@@ -222,7 +236,10 @@ function cambiar(id, signo) {
 function control(p) {
   const q = carrito[p.id];
   if (!q) return `<button class="agregar" data-id="${p.id}" data-s="1">Agregar</button>`;
-  return `<div class="cant"><button data-id="${p.id}" data-s="-1" aria-label="Quitar">−</button><b>${cantTxt(q)}${p.u ? " " + p.u : ""}</b><button data-id="${p.id}" data-s="1" aria-label="Sumar">+</button></div>`;
+  const medio = p.peso
+    ? `<select data-peso="${p.id}" aria-label="Cantidad de ${p.nc}">${PESOS.map((t, i) => `<option value="${i + 1}"${i + 1 === q ? " selected" : ""}>${t}</option>`).join("")}</select>`
+    : `<b>${cantTxt(q)}${p.u ? " " + p.u : ""}</b>`;
+  return `<div class="cant"><button data-id="${p.id}" data-s="-1" aria-label="Quitar">−</button>${medio}<button data-id="${p.id}" data-s="1" aria-label="Sumar">+</button></div>`;
 }
 
 function pintarCats() {
@@ -272,7 +289,7 @@ function pintarPedido() {
   $("total").textContent = totalTxt;
   $("filaTotal").style.display = CON_PRECIOS ? "flex" : "none";
   $("aviso").textContent = !CON_PRECIOS
-    ? "El local le confirma el valor al recibir el pedido. Si quiere indicar libras, kilos o unidades, escríbalo en la nota."
+    ? "El local le confirma el valor al recibir el pedido."
     : sinPrecio ? "El local le confirma el valor de los productos sin precio al recibir el pedido."
     : "En frutas y verduras el valor final puede variar un poco según el peso real.";
   $("items").innerHTML = Object.entries(carrito).map(([id, q]) => {
@@ -291,6 +308,7 @@ function mensaje() {
   const { total, sinPrecio } = totales();
   const lineas = Object.entries(carrito).map(([id, q]) => {
     const p = porId[id];
+    if (p.peso) return `• ${PESOS[q - 1]} · ${p.nc}`;
     return `• ${cantTxt(q)}${p.u ? " " + p.u + " ·" : " ×"} ${p.nc}${p.p ? " — " + pesos(q * p.p) : ""}`;
   });
   const m = [`🛒 *Pedido para ${LOCAL}*`, "", ...lineas, "",
@@ -314,6 +332,10 @@ function opciones(idCaja, alElegir) {
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-id]");
   if (b) cambiar(b.dataset.id, Number(b.dataset.s));
+});
+document.addEventListener("change", e => {
+  const s = e.target.closest("[data-peso]");
+  if (s) poner(s.dataset.peso, Number(s.value));
 });
 $("cats").addEventListener("click", e => {
   const b = e.target.closest("[data-c]"); if (!b) return;
