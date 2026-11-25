@@ -3,11 +3,14 @@
 //
 // Campos de cada producto:
 //   n    nombre            m  marca (si aplica)        e  emoji (si no, el de la categoría)
-//   u    unidad de venta: "lb", "kg", "und", "atado", "paquete"…  ""  = POR CONFIRMAR con el dueño
-//   p    precio en pesos por esa unidad                        null = POR CONFIRMAR (no inventar)
-//   duda pregunta pendiente para el dueño: el nombre va tal como él lo escribió, sin adivinar
+//   u    unidad de venta: "lb", "kg", "und", "atado", "paquete"…  ""  = sin unidad
+//   p    precio en pesos por esa unidad                        null = sin precio
 //
-// Al llenar u y p, la maqueta muestra sola el precio y el total. Con "lb" o "kg" la cantidad sube de a media.
+// Decisión del dueño (24/11/2026): el catálogo va SIN precios y SIN unidades de venta. Por eso u y p van vacíos.
+// Si algún día los quiere, basta llenarlos: la maqueta muestra sola el precio y el total.
+// Nombres confirmados por el dueño tal como los escribió: Yotas, Chocheco, Mata burro, Raíces chinas, Agras,
+// Esponja Brikla frágil, Lefragance. Corregidos por él: Vanish en polvo, Maíz amarillo, Deterk.
+// Pendiente: Maíz pira venía en una segunda lista «La Huerta»; falta saber si es otra presentación u otra marca.
 const SURTIDO = [
   { c: "Verduras", e: "🥬", items: [
     {n:"Cebolla cabezona", e:"🧅", u:"", p:null},
@@ -46,9 +49,9 @@ const SURTIDO = [
     {n:"Mazorca", e:"🌽", u:"", p:null},
     {n:"Mazorca grano grueso", e:"🌽", u:"", p:null},
     {n:"Maíz blanco", e:"🌽", u:"", p:null},
-    {n:"Maíz para amarillo", e:"🌽", u:"", p:null, duda:"Así venía escrito: ¿es «maíz amarillo»?"},
-    {n:"Yotas", u:"", p:null, duda:"No se entiende el nombre: ¿qué producto es?"},
-    {n:"Raíces chinas", u:"", p:null, duda:"No se entiende el nombre: ¿qué producto es?"},
+    {n:"Maíz amarillo", e:"🌽", u:"", p:null},
+    {n:"Yotas", u:"", p:null},
+    {n:"Raíces chinas", u:"", p:null},
   ]},
   { c: "Frutas", e:"🍎", items: [
     {n:"Banano", e:"🍌", u:"", p:null},
@@ -92,8 +95,8 @@ const SURTIDO = [
     {n:"Aguacate", e:"🥑", u:"", p:null},
     {n:"Patilla", e:"🍉", u:"", p:null},
     {n:"Patilla baby", e:"🍉", u:"", p:null},
-    {n:"Chocheco", u:"", p:null, duda:"No se entiende el nombre: ¿qué producto es?"},
-    {n:"Agras", u:"", p:null, duda:"Así venía escrito: ¿qué producto es?"},
+    {n:"Chocheco", u:"", p:null},
+    {n:"Agras", u:"", p:null},
   ]},
   { c: "Papas, yuca y plátanos", e:"🥔", items: [
     {n:"Papa criolla", u:"", p:null},
@@ -103,7 +106,7 @@ const SURTIDO = [
     {n:"Plátano verde", e:"🍌", u:"", p:null},
     {n:"Plátano maduro", e:"🍌", u:"", p:null},
     {n:"Guineo negro", e:"🍌", u:"", p:null},
-    {n:"Mata burro", e:"🍌", u:"", p:null, duda:"No se entiende el nombre: ¿qué producto es?"},
+    {n:"Mata burro", e:"🍌", u:"", p:null},
   ]},
   { c: "Hierbas y picadillos", e:"🌿", items: [
     {n:"Cilantro", u:"", p:null},
@@ -140,7 +143,7 @@ const SURTIDO = [
     {n:"Maíz pilado blanco", m:"La Huerta", e:"🌽", u:"", p:null},
     {n:"Cuchuco de maíz", m:"La Huerta", e:"🌽", u:"", p:null},
     {n:"Cebada perlada", m:"La Huerta", e:"🌾", u:"", p:null},
-    {n:"Maíz pira", m:"La Huerta", e:"🍿", u:"", p:null, duda:"Venía en una segunda lista «La Huerta» (garbanzo, lenteja, frijol, maíz pira): ¿es otra presentación u otra marca?"},
+    {n:"Maíz pira", m:"La Huerta", e:"🍿", u:"", p:null},
   ]},
   { c: "Despensa", e:"🛒", items: [
     {n:"Aceite", m:"Ideal", e:"🌻", u:"", p:null},
@@ -180,7 +183,7 @@ const SURTIDO = [
     {n:"Jabón en polvo", m:"Ariel", e:"🧺", u:"", p:null},
     {n:"Jabón en polvo", m:"Dersa", e:"🧺", u:"", p:null},
     {n:"Jabón en polvo", m:"3D", e:"🧺", u:"", p:null},
-    {n:"Jabón en polvo", m:"Detergente K", e:"🧺", u:"", p:null},
+    {n:"Jabón en polvo", m:"Deterk", e:"🧺", u:"", p:null},
     {n:"Papel higiénico", m:"Familia", e:"🧻", u:"", p:null},
     {n:"Papel higiénico", m:"Elite", e:"🧻", u:"", p:null},
     {n:"Bolsa de aseo grande", e:"🗑️", u:"", p:null},
@@ -192,8 +195,8 @@ const SURTIDO = [
     {n:"Insecticida en spray", m:"Black Flag", e:"🪳", u:"", p:null},
     {n:"Aromax", e:"🧴", u:"", p:null},
     {n:"Esponjas", m:"Matriz", e:"🧽", u:"", p:null},
-    {n:"Esponja Brikla frágil", e:"🧽", u:"", p:null, duda:"No se entiende el nombre o la marca: ¿cómo es exactamente?"},
-    {n:"Vanis en polvo", e:"🧺", u:"", p:null, duda:"Así venía escrito: ¿qué producto y marca es?"},
+    {n:"Esponja Brikla frágil", e:"🧽", u:"", p:null},
+    {n:"Vanish en polvo", e:"🧺", u:"", p:null},
   ]},
   { c: "Aseo personal", e:"🧴", items: [
     {n:"Jabón de baño", m:"Lemon", e:"🧼", u:"", p:null},
@@ -203,7 +206,7 @@ const SURTIDO = [
     {n:"Jabón de baño", m:"Palmolive", e:"🧼", u:"", p:null},
     {n:"Jabón de baño", m:"Protex", e:"🧼", u:"", p:null},
     {n:"Jabón de baño", m:"Johnson's", e:"🧼", u:"", p:null},
-    {n:"Jabón de baño", m:"Lefragance", e:"🧼", u:"", p:null, duda:"No se entiende la marca: ¿cómo se escribe?"},
+    {n:"Jabón de baño", m:"Lefragance", e:"🧼", u:"", p:null},
     {n:"Crema dental", m:"Colgate Triple Acción", e:"🪥", u:"", p:null},
     {n:"Crema dental", m:"Colgate Extra Blancura", e:"🪥", u:"", p:null},
     {n:"Crema dental", m:"Colgate Anticaries", e:"🪥", u:"", p:null},

@@ -126,7 +126,7 @@
   <div class="cats"><div class="cats-fila" id="cats"></div></div>
   <h2 id="titulo">Todo</h2>
   <div class="grid" id="grid"></div>
-  <p class="nota">Maqueta de demostración · surtido real del local · precios y unidades de venta por confirmar</p>
+  <p class="nota">Maqueta de demostración · surtido real del local</p>
 </main>
 
 <div class="barra" id="barra">
@@ -137,7 +137,7 @@
   <div class="hoja" role="dialog" aria-label="Mi pedido">
     <div class="hoja-top"><h3>Mi pedido</h3><button class="cerrar" id="cerrar" aria-label="Cerrar">✕</button></div>
     <div id="items"></div>
-    <div class="total"><span>Total</span><span id="total">$0</span></div>
+    <div class="total" id="filaTotal"><span>Total</span><span id="total">$0</span></div>
     <p class="aviso" id="aviso"></p>
 
     <label for="nombre">¿A nombre de quién?</label>
@@ -174,10 +174,10 @@
 // ───── Configuración: lo único que se cambia para el local real ─────
 // Número de WhatsApp del local con indicativo, sin + ni espacios (ej. "573001234567").
 // Vacío = WhatsApp deja elegir el contacto (sirve para la demostración).
-const WHATSAPP = "";        // POR PEDIR al dueño. El pedido le llega SOLO a él, a este WhatsApp.
-const LOCAL = "El Económico"; // POR CONFIRMAR: nombre exacto del negocio.
-const DIRECCION = "";       // POR CONFIRMAR: dirección exacta. Vacío = solo "Los Patios".
-// Número al que el cliente paga por Nequi o por llave (el dueño dijo que es el mismo número). POR PEDIR.
+const WHATSAPP = "";        // FALTA ESCRIBIRLO: es el número que el dueño ya le dio a Luis. El pedido le llega SOLO a él.
+const LOCAL = "El Económico"; // Nombre exacto: se deja así por ahora (decisión de Luis, 24/11).
+const DIRECCION = "";       // Se omite por ahora (decisión de Luis, 24/11). Vacío = solo "Los Patios".
+// Número al que el cliente paga por Nequi o por llave: el mismo del WhatsApp, según el dueño. FALTA ESCRIBIRLO.
 const PAGO_NUMERO = "";
 
 // El surtido vive en surtido.js (SURTIDO). Aquí solo se aplana y se le pone id a cada producto.
@@ -192,6 +192,8 @@ const PRODUCTOS = SURTIDO.flatMap(g => g.items.map(p => ({
 // ────────────────────────────────────────────────────────────────────
 
 const $ = id => document.getElementById(id);
+// El dueño no quiere precios ni unidades: si ningún producto trae precio, no se muestra precio ni total.
+const CON_PRECIOS = PRODUCTOS.some(p => p.p);
 const porId = Object.fromEntries(PRODUCTOS.map(p => [p.id, p]));
 const CATS = ["Todo", ...(PRODUCTOS.some(p => p.antes) ? ["Ofertas"] : []), ...SURTIDO.map(g => g.c)];
 const pesos = v => "$" + Math.round(v).toLocaleString("es-CO");
@@ -229,12 +231,11 @@ function pintarCats() {
 
 const precioTxt = p => p.p
   ? `<div class="precio">${pesos(p.p)}${p.u ? ` <small>/ ${p.u}</small>` : ""}${p.antes ? `<span class="antes">${pesos(p.antes)}</span>` : ""}</div>`
-  : `<div class="precio pc">Precio por confirmar</div>`;
+  : CON_PRECIOS ? `<div class="precio pc">Precio por confirmar</div>` : "";
 
 const tarjeta = p => `
     <div class="prod${carrito[p.id] ? " en-carrito" : ""}">
       ${p.antes ? '<span class="oferta">Oferta</span>' : ""}
-      ${p.duda ? `<span class="duda" title="${p.duda}">nombre por confirmar</span>` : ""}
       <div class="foto">${p.e}</div>
       <div class="nombre">${p.n}${p.m ? `<span class="marca-p">${p.m}</span>` : ""}</div>
       ${precioTxt(p)}
@@ -269,14 +270,16 @@ function pintarPedido() {
   $("barraN").textContent = n;
   $("barraTotal").textContent = sinPrecio ? "" : totalTxt;
   $("total").textContent = totalTxt;
-  $("aviso").textContent = sinPrecio
-    ? "El local le confirma el valor y la unidad (libra, kilo, unidad) de cada producto al recibir el pedido."
+  $("filaTotal").style.display = CON_PRECIOS ? "flex" : "none";
+  $("aviso").textContent = !CON_PRECIOS
+    ? "El local le confirma el valor al recibir el pedido. Si quiere indicar libras, kilos o unidades, escríbalo en la nota."
+    : sinPrecio ? "El local le confirma el valor de los productos sin precio al recibir el pedido."
     : "En frutas y verduras el valor final puede variar un poco según el peso real.";
   $("items").innerHTML = Object.entries(carrito).map(([id, q]) => {
     const p = porId[id];
     return `<div class="item"><div class="e">${p.e}</div>
-      <div class="t"><b>${p.nc}</b><span>${p.p ? pesos(p.p) + (p.u ? " / " + p.u : "") : "Precio por confirmar"}</span></div>
-      ${control(p)}<div class="s">${p.p ? pesos(q * p.p) : "—"}</div></div>`;
+      <div class="t"><b>${p.nc}</b><span>${p.p ? pesos(p.p) + (p.u ? " / " + p.u : "") : CON_PRECIOS ? "Precio por confirmar" : p.c}</span></div>
+      ${control(p)}${CON_PRECIOS ? `<div class="s">${p.p ? pesos(q * p.p) : "—"}</div>` : ""}</div>`;
   }).join("");
   if (!n) $("velo").classList.remove("abierto");
   $("repetir").style.display = !n && leer("le_ultimo") ? "block" : "none";
@@ -291,7 +294,7 @@ function mensaje() {
     return `• ${cantTxt(q)}${p.u ? " " + p.u + " ·" : " ×"} ${p.nc}${p.p ? " — " + pesos(q * p.p) : ""}`;
   });
   const m = [`🛒 *Pedido para ${LOCAL}*`, "", ...lineas, "",
-    sinPrecio ? "*Total: por confirmar*" : `*Total aprox.: ${pesos(total)}*`, "",
+    ...(CON_PRECIOS ? [sinPrecio ? "*Total: por confirmar*" : `*Total aprox.: ${pesos(total)}*`, ""] : []),
     `👤 ${$("nombre").value.trim()}`,
     entrega === "Domicilio" ? `🛵 Domicilio: ${$("dir").value.trim()}` : "🏪 Recojo en el local",
     `📲 Pago: ${pago}`];
